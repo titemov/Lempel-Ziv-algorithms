@@ -32,7 +32,7 @@ JavaFX version 23.0.1
 
 ### Linux (Debian/Ubuntu)
 
-1. run `sudo apt update` and `sudo apt upgrade`
+1. Run `sudo apt update` and `sudo apt upgrade`
 
 2. Install JDK via `sudo apt install default-jdk`
 
