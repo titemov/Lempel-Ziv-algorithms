@@ -34,7 +34,7 @@ JavaFX version 23.0.1
 
 1. Run `sudo apt update` and `sudo apt upgrade`
 
-2. Install JDK via `sudo apt install default-jdk`
+2. Download latest [JDK](https://www.oracle.com/java/technologies/downloads/) for your Linux system and install it.
 
 3. Download latest [JavaFx](https://gluonhq.com/products/javafx/) library and extract contents whereever it is reachable.
 
