@@ -1,5 +1,5 @@
 # Lempel-Ziv-algorithms
-__WORK IN PROGRESS__
+__WORK IN PROGRESS__ (__NOT READY YET__)
 
 Lempel-Ziv based algorithms: LZ77, LZ78, LZSS. For now program can encode LZ77 (decode and other algorithms wip)
 
