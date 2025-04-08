@@ -3,6 +3,8 @@ __WORK IN PROGRESS__
 
 Lempel-Ziv based algorithms: LZ77, LZ78, LZSS. For now program can encode LZ77 (decode and other algorithms wip)
 
+![Main Window](lz77.png)
+
 ## System requirements
 Java version 23.0.1
 
