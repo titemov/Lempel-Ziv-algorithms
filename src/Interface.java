@@ -16,6 +16,49 @@ import java.util.Objects;
 public class Interface extends Application {
     String ans;
 
+    private String[] showDictionary(String mode, String input){
+        Stage newStage = new Stage();
+        Group root = new Group();
+        newStage.setTitle("Dictionary");
+        newStage.setWidth(400);
+        newStage.setHeight(400);
+
+        String[] dict = null;
+
+        if(Objects.equals(mode,"Encode")){
+            TextArea showDictArea = new TextArea();
+            showDictArea.setLayoutX(5);
+            showDictArea.setLayoutY(5);
+            showDictArea.setMinSize(375,350);
+            showDictArea.setMaxSize(375,350);
+            showDictArea.setWrapText(true);
+            showDictArea.setEditable(false);
+            showDictArea.setFont(Font.font("Consolas",20));
+            root.getChildren().add(showDictArea);
+
+            dict = Backend.createDict(input);
+            String s="";
+            String binarySymb;
+            int symbsBits=(int)(Math.ceil(Math.log(dict.length)/Math.log(2)));
+
+            for(int i=0;i<dict.length;i++){
+                binarySymb=Backend.addLeadingZeros(Integer.parseInt(Integer.toBinaryString(i)),symbsBits);
+                s+=(dict[i]+"\t"+binarySymb+"\n");
+            }
+            showDictArea.setText(s);
+
+        }else{
+            ;//создает кнопку и область ввода. По нажатию кнопки считывается ввод и возвращается через dict
+            //dict пересоздается с нужным размером после нажатия кнопки.
+        }
+
+        Scene newScene = new Scene(root,Color.SNOW);
+        newStage.setScene(newScene);
+        newStage.setResizable(false);
+        newStage.show();
+
+        return dict;
+    }
 
     @Override
     public void start(Stage stage){
@@ -26,8 +69,8 @@ public class Interface extends Application {
         Group outputGroup = new Group();
 
         Label errorLabel = new Label(" ");
-        errorLabel.setLayoutX(10);
-        errorLabel.setLayoutY(525);
+        errorLabel.setLayoutX(100);
+        errorLabel.setLayoutY(525-2);
         errorLabel.setFont(Font.font("System",20));
         labelGroup.getChildren().add(errorLabel);
 
@@ -100,6 +143,7 @@ public class Interface extends Application {
         outputArea.setMinSize(500,190);
         outputArea.setMaxSize(500,190);
         outputArea.setWrapText(true);
+        outputArea.setEditable(false);
         outputArea.setFont(Font.font("Consolas",20));
         outputGroup.getChildren().add(outputArea);
 
@@ -113,14 +157,33 @@ public class Interface extends Application {
         numSysCB.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
-                if(Objects.equals("binary",numSysCB.getValue())){
-                    outputArea.setText(ans);
-                }else{
-                    outputArea.setText("0x"+Backend.binaryToHex(ans));
+                if(!Objects.equals("",outputArea.getText())) {
+                    if (Objects.equals("binary", numSysCB.getValue())) {
+                        outputArea.setText(ans);
+                    } else {
+                        outputArea.setText("0x" + Backend.binaryToHex(ans));
+                    }
                 }
             }
         });
         outputGroup.getChildren().add(numSysCB);
+
+        Button dictShowButton = new Button("Dictionary");
+        dictShowButton.setLayoutX(525);
+        dictShowButton.setLayoutY(115);
+        dictShowButton.setPrefSize(120,15);
+        dictShowButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                if(!Objects.equals("",inputArea.getText())){
+                    showDictionary(modeCB.getValue(),inputArea.getText());
+                }else{
+                    errorLabel.setText("Error! No input text!");
+                }
+            }
+        });
+        inputGroup.getChildren().add(dictShowButton);
+
 
         Button runButton = new Button("Run program!");
         runButton.setLayoutX(525);
@@ -144,6 +207,7 @@ public class Interface extends Application {
 
                 Log.initialEntry();
                 Log.writeLog(" Input: "+inputString+"\n",true);
+                Log.writeLog(" Algorithm: "+algoCB.getValue()+"\tMode: "+modeCB.getValue()+"\n",true);
 
                 LZ77 lz77 = new LZ77("","",0,0,"","");
                 ans=lz77.solveLZ77(inputString,dictSize,buffSize);
@@ -158,6 +222,23 @@ public class Interface extends Application {
             }
         });
         inputGroup.getChildren().add(runButton);
+
+        Button logOpenerButton = new Button("Open log.txt");
+        logOpenerButton.setLayoutX(10);
+        logOpenerButton.setLayoutY(525);
+        logOpenerButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                try{
+                    Runtime rs = Runtime.getRuntime();
+                    rs.exec("notepad log.txt");
+                }catch (Exception e){
+                    errorLabel.setText("Error! Cannot open log file!");
+                    return;
+                }
+            }
+        });
+        outputGroup.getChildren().add(logOpenerButton);
 
         mainGroup.getChildren().addAll(inputGroup, labelGroup, outputGroup);
 
