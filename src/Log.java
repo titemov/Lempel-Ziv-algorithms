@@ -11,7 +11,7 @@ public class Log {
             String s = date.toString();
             int len = (int) raf.length();
             raf.seek(len);
-            raf.write(("\n\n\n\n|||||||||| "+s+" ||||||||||\n\n\n").getBytes());
+            raf.write(("\n\n\n\n |||||||||| "+s+" ||||||||||\n\n\n").getBytes());
             raf.close();
         }catch (Exception e){
             e.printStackTrace();

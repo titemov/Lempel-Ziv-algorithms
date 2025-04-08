@@ -11,7 +11,10 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
+import java.util.Objects;
+
 public class Interface extends Application {
+    String ans;
 
 
     @Override
@@ -21,6 +24,12 @@ public class Interface extends Application {
         Group inputGroup = new Group();
         Group labelGroup = new Group();
         Group outputGroup = new Group();
+
+        Label errorLabel = new Label(" ");
+        errorLabel.setLayoutX(10);
+        errorLabel.setLayoutY(525);
+        errorLabel.setFont(Font.font("System",20));
+        labelGroup.getChildren().add(errorLabel);
 
         ObservableList<String> algo = FXCollections.observableArrayList("LZ77");
         ComboBox<String> algoCB = new ComboBox<>(algo);
@@ -41,43 +50,114 @@ public class Interface extends Application {
         inputGroup.getChildren().add(modeCB);
 
         Label bufSizeLabel = new Label("Buffer size:");
-        bufSizeLabel.setLayoutX(225);
-        bufSizeLabel.setLayoutY(10+2);
-        bufSizeLabel.setFont(Font.font("Consolas",20));
+        bufSizeLabel.setLayoutX(265);
+        bufSizeLabel.setLayoutY(10-2);
+        bufSizeLabel.setFont(Font.font("System",20));
         labelGroup.getChildren().add(bufSizeLabel);
 
-        TextField bufSizeTF = new TextField("8");
-        bufSizeTF.setLayoutX(365);
-        bufSizeTF.setLayoutY(10);
-        bufSizeTF.setMaxSize(35,25);
-        inputGroup.getChildren().add(bufSizeTF);
+        TextField buffSizeTF = new TextField("8");
+        buffSizeTF.setLayoutX(365);
+        buffSizeTF.setLayoutY(10);
+        buffSizeTF.setMaxSize(35,25);
+        inputGroup.getChildren().add(buffSizeTF);
 
-        Label dicSizeLabel = new Label("Dictionary size:");
-        dicSizeLabel.setLayoutX(425);
-        dicSizeLabel.setLayoutY(10+2);
-        dicSizeLabel.setFont(Font.font("Consolas",20));
-        labelGroup.getChildren().add(dicSizeLabel);
+        Label dictSizeLabel = new Label("Dictionary size:");
+        dictSizeLabel.setLayoutX(470);
+        dictSizeLabel.setLayoutY(10-2);
+        dictSizeLabel.setFont(Font.font("System",20));
+        labelGroup.getChildren().add(dictSizeLabel);
 
-        TextField dicSizeTF = new TextField("8");
-        dicSizeTF.setLayoutX(610);
-        dicSizeTF.setLayoutY(10);
-        dicSizeTF.setMaxSize(35,25);
-        inputGroup.getChildren().add(dicSizeTF);
+        TextField dictSizeTF = new TextField("8");
+        dictSizeTF.setLayoutX(610);
+        dictSizeTF.setLayoutY(10);
+        dictSizeTF.setMaxSize(35,25);
+        inputGroup.getChildren().add(dictSizeTF);
 
-        Label inputAreaLabel = new Label("Dictionary size:");
-        inputAreaLabel.setLayoutX(10);
-        inputAreaLabel.setLayoutY(45+2);
-        inputAreaLabel.setFont(Font.font("Consolas",20));
+        Label inputAreaLabel = new Label("Input text:");
+        inputAreaLabel.setLayoutX(10-2);
+        inputAreaLabel.setLayoutY(45);
+        inputAreaLabel.setFont(Font.font("System",20));
         labelGroup.getChildren().add(inputAreaLabel);
 
         TextArea inputArea = new TextArea();
         inputArea.setLayoutX(10);
         inputArea.setLayoutY(80);
-        inputArea.maxWidth(645);
-        inputArea.minWidth(645);
-        inputArea.maxHeight(225);
-        inputArea.minHeight(225);
+        inputArea.setMinSize(500,190);
+        inputArea.setMaxSize(500,190);
+        inputArea.setWrapText(true);
+        inputArea.setFont(Font.font("Consolas",20));
         inputGroup.getChildren().add(inputArea);
+
+        Label outputAreaLabel = new Label("Output text:");
+        outputAreaLabel.setLayoutX(10-2);
+        outputAreaLabel.setLayoutY(285);
+        outputAreaLabel.setFont(Font.font("System",20));
+        labelGroup.getChildren().add(outputAreaLabel);
+
+        TextArea outputArea = new TextArea();
+        outputArea.setLayoutX(10);
+        outputArea.setLayoutY(320);
+        outputArea.setMinSize(500,190);
+        outputArea.setMaxSize(500,190);
+        outputArea.setWrapText(true);
+        outputArea.setFont(Font.font("Consolas",20));
+        outputGroup.getChildren().add(outputArea);
+
+        ObservableList<String> numSys = FXCollections.observableArrayList("binary","hex");
+        ComboBox<String> numSysCB = new ComboBox<>(numSys);
+        numSysCB.setLayoutX(135);
+        numSysCB.setLayoutY(285+2);
+        numSysCB.setValue("binary");
+        numSysCB.setMinWidth(75);
+        numSysCB.setMaxWidth(75);
+        numSysCB.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                if(Objects.equals("binary",numSysCB.getValue())){
+                    outputArea.setText(ans);
+                }else{
+                    outputArea.setText("0x"+Backend.binaryToHex(ans));
+                }
+            }
+        });
+        outputGroup.getChildren().add(numSysCB);
+
+        Button runButton = new Button("Run program!");
+        runButton.setLayoutX(525);
+        runButton.setLayoutY(80);
+        runButton.setPrefSize(120,15);
+        runButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                int dictSize=Integer.parseInt(dictSizeTF.getText());
+                int buffSize=Integer.parseInt(buffSizeTF.getText());
+                errorLabel.setText(" ");
+                if(dictSize<4 || buffSize<4){
+                    errorLabel.setText("Error! Dictionary or Buffer size is lower than 4!");
+                    return;
+                }
+                String inputString=inputArea.getText();
+                if(inputString==""){
+                    errorLabel.setText("Error! No input text!");
+                    return;
+                }
+
+                Log.initialEntry();
+                Log.writeLog(" Input: "+inputString+"\n",true);
+
+                LZ77 lz77 = new LZ77("","",0,0,"","");
+                ans=lz77.solveLZ77(inputString,dictSize,buffSize);
+
+                Log.writeLog("ANSWER:\n"+"bin: "+ans+"\nhex: 0x"+Backend.binaryToHex(ans),true);
+                if(Objects.equals("binary",numSysCB.getValue())){
+                    outputArea.setText(ans);
+                }else{
+                    outputArea.setText("0x"+Backend.binaryToHex(ans));
+                }
+
+            }
+        });
+        inputGroup.getChildren().add(runButton);
 
         mainGroup.getChildren().addAll(inputGroup, labelGroup, outputGroup);
 
