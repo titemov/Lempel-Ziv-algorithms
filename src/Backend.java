@@ -8,6 +8,29 @@ public class Backend extends Interface {
         return r.nextInt(high - low) + low;
     }
 
+    public static String run(String algo, String mode, String input, int dictSize, int buffSize){
+        String result="";
+
+        Log.initialEntry();
+        Log.writeLog("Input: "+input+"\n",true);
+        Log.writeLog("Algorithm: "+algo+"\nMode: "+mode+"\n",true);
+
+        if(Objects.equals(algo,"LZ77")) {
+            if(Objects.equals(mode,"Encode")) {
+                LZ77 lz77 = new LZ77("", "", 0, 0, "", "");
+                result = lz77.encodeLZ77(input, dictSize, buffSize);
+            }else{
+                ;
+            }
+        }else{
+            ;
+        }
+
+        Log.writeLog("ANSWER:\n"+"bin: "+result+"\nhex: 0x"+binaryToHex(result),true);
+
+        return result;
+    }
+
     public static String[] createDict(String string){
         //create string without repeated symbols
         //create array with length as that string

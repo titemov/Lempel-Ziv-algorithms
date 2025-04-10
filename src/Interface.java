@@ -8,7 +8,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
-import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 import java.util.Objects;
@@ -195,8 +194,9 @@ public class Interface extends Application {
                 int dictSize=Integer.parseInt(dictSizeTF.getText());
                 int buffSize=Integer.parseInt(buffSizeTF.getText());
                 errorLabel.setText(" ");
-                if(dictSize<4 || buffSize<4){
-                    errorLabel.setText("Error! Dictionary or Buffer size is lower than 4!");
+
+                if(dictSize<1 || buffSize<1){
+                    errorLabel.setText("Error! Dictionary or Buffer size is lower than 1!");
                     return;
                 }
                 String inputString=inputArea.getText();
@@ -205,14 +205,8 @@ public class Interface extends Application {
                     return;
                 }
 
-                Log.initialEntry();
-                Log.writeLog(" Input: "+inputString+"\n",true);
-                Log.writeLog(" Algorithm: "+algoCB.getValue()+"\tMode: "+modeCB.getValue()+"\n",true);
+                ans=Backend.run(algoCB.getValue(),modeCB.getValue(),inputString,dictSize,buffSize);
 
-                LZ77 lz77 = new LZ77("","",0,0,"","");
-                ans=lz77.solveLZ77(inputString,dictSize,buffSize);
-
-                Log.writeLog("ANSWER:\n"+"bin: "+ans+"\nhex: 0x"+Backend.binaryToHex(ans),true);
                 if(Objects.equals("binary",numSysCB.getValue())){
                     outputArea.setText(ans);
                 }else{
