@@ -55,9 +55,10 @@ public class LZ78 {
         for(int i=0;i<dict.length;i++){
             for(int n=0;n<buff.length();n++){
                 if(Objects.equals(dict[i],buff.substring(0,n+1))){
-                    if(dict[i].length()>elem.length())
-                        elem=dict[i];
-                        startPos=i+1;
+                    if(dict[i].length()>elem.length()) {
+                        elem = dict[i];
+                        startPos = i + 1;
+                    }
                 }
             }
         }
@@ -149,6 +150,10 @@ public class LZ78 {
                 push(this.dictionary,this.letter);
             }
         }
+        return this.finalCode;
+    }
+
+    public String decodeLZ78(String inputString, int dictSize, int buffSize){
         return this.finalCode;
     }
 }
