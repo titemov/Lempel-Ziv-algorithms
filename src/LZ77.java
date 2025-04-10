@@ -148,9 +148,9 @@ public class LZ77 {
 
             Log.writeLog(String.format("%" + (dictSize) + "s", this.dictionary),false);
             Log.writeLog(String.format("%" + (2+buffSize) + "s", this.buff),false);
-            Log.writeLog(String.format("%" + (2+1+(Math.min(dictSize,buffSize)/10)) + "d", this.len),false);
+            Log.writeLog(String.format("%" + (2+1+(Math.min(dictSize,buffSize)/100)) + "d", this.len),false);
             Log.writeLog(String.format("%" + (5) + "d", this.pos),false);
-            Log.writeLog(String.format("%" + (2-(dictSize/10)+2+1) + "s", this.letter),false);
+            Log.writeLog(String.format("%" + (2-(dictSize/100)+2+1) + "s", this.letter),false);
             Log.writeLog(String.format("%" + ((6-1)+2+lenBits) + "s", binaryLen),false);
             Log.writeLog(String.format("%" + (1+posBits) + "s", binaryPos),false);//posBits might be equal to zero
             Log.writeLog(String.format("%" + (1+symbsBits) + "s", binarySymb),false);

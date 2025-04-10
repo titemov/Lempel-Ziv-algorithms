@@ -134,7 +134,7 @@ public class LZ78 {
             Log.writeLog(String.format("%" + (2+buffSize) + "s", this.buff),false);
             Log.writeLog(String.format("%" + (2+3+buffSize*2) + "s", this.foundString),false);
             Log.writeLog(String.format("%" + (2+1) + "d", this.pos),false);
-            Log.writeLog(String.format("%" + (2-(dictSize/10)+2+1) + "s", this.letter),false);
+            Log.writeLog(String.format("%" + (2-(dictSize/100)+2+1) + "s", this.letter),false);
             Log.writeLog(String.format("%" + (5+2+posBits) + "s", binaryPos),false);
             Log.writeLog(String.format("%" + (1+symbsBits) + "s", binarySymb),false);
             Log.writeLog("",true);
