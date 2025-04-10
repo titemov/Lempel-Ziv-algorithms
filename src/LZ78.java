@@ -8,14 +8,14 @@ public class LZ78 {
     String finalCode="";
     String[] dictionary;
     String buff;
-    int len;
+    String foundString;
     int pos;
     String letter;
     String binaryCode;
-    public LZ78(String buff, int len, int pos, String letter, String binaryCode){
+    public LZ78(String buff, String foundString, int pos, String letter, String binaryCode){
         this.dictionary= new String[dictSize];
         this.buff=buff;
-        this.len=len;
+        this.foundString=foundString;
         this.pos=pos;
         this.letter =letter;
         this.binaryCode=binaryCode;
@@ -36,74 +36,32 @@ public class LZ78 {
         array[array.length-1]="";
     }
     public static void push(String[] array,String elem){
-        if(Objects.equals(array[array.length-1],"")){
-            array[array.length-1]=elem;
-        }else{
-            for(int i=0;i<array.length-1;i++){
-                array[i]=array[i+1];
+        for(int i=0;i<array.length;i++){
+            if(Objects.equals(array[i],"")) {
+                array[i] = elem;
+                return;
             }
-            array[array.length-1]=elem;
         }
+        for(int i=0;i<array.length-1;i++){
+            array[i]=array[i+1];
+        }
+        array[array.length-1]=elem;
     }
 
-    public static String[] findSubString(String buff, String[] dict, int dictSize){
-        int[] result = {0,0};//startPos,len
+    public static int findSubString(String buff, String[] dict, int dictSize){
         int startPos = 0;
-        int len = 0;
-        String elem;
+        String elem="";
 
         for(int i=0;i<dict.length;i++){
             for(int n=0;n<buff.length();n++){
                 if(Objects.equals(dict[i],buff.substring(0,n+1))){
-                    startPos=i+1;
+                    if(dict[i].length()>elem.length())
+                        elem=dict[i];
+                        startPos=i+1;
                 }
             }
         }
-
-        for(int i=1;i<splitted.length;i++){
-            //first in splitted always skipped because standing before "elem"
-            for(int n=0;n<minLen;n++){
-                try {
-                    //System.out.println("COMPARING: "+buff.substring(0, n + 1)+" "+(elem+splitted[i].substring(0, n)));
-                    if (Objects.equals(buff.substring(0, n + 1), (elem+splitted[i].substring(0, n)))) {
-                        if(len<(elem+splitted[i].substring(0, n)).length()){
-                            len=(elem+splitted[i].substring(0, n)).length();
-                        }
-                    }
-                    else{
-                        break;
-                    }
-                }catch (Exception e){
-                    continue;
-                }
-            }
-        }
-
-        if(splitted.length==1 && splitted[0].length() != dict.length()){
-            startPos=dict.length()-1;
-            len=1;
-        }else{
-            if(splitted.length==0){
-                startPos=0;
-                len=1;
-            }
-        }
-        //System.out.println("ans[0] "+dict.substring(startPos,startPos+len));
-
-        for(int i=0;i<dict.length()-result[1]+1;i++){
-            if(Objects.equals(buff.substring(0,len),dict.substring(i,i+len))){
-                startPos=i;
-                break;
-            }
-        }
-
-        if(len!=0) {
-            result[0] = (dictSize - dict.length()) + startPos;
-        }else{
-            result[0]=startPos;
-        }
-        result[1]=len;
-        return result;
+        return startPos;
     }
 
     public String encodeLZ78(String inputString,int dictSize, int buffSize){
@@ -127,24 +85,27 @@ public class LZ78 {
         Log.writeLog(" ",true);
 
         while(true){
+            int len=0;
             try {
                 if (inputString.length() - currentPos <= this.buffSize) this.buff = inputString.substring(currentPos);
                 else this.buff = inputString.substring(currentPos, this.buffSize + currentPos);
+                if(this.buff.isEmpty()){
+                    throw new Exception();
+                }
             }catch (Exception e){
                 break;
                 //this done in case if last currentpos value will be bigger than inputString length
             }
 
-            if(this.buff.length()==0){
-                break;
+            this.pos = findSubString(this.buff,this.dictionary,this.dictSize);
+            if(this.pos!=0){
+                this.foundString=this.dictionary[this.pos-1];
+                len=this.dictionary[this.pos-1].length();
             }
 
-            String[] temp = findSubString(this.buff,this.dictionary,this.dictSize);
-            this.pos=Integer.valueOf(temp[1]);
-            this.letter =temp[0];
 
             binaryPos=Backend.addLeadingZeros(Integer.parseInt(Integer.toBinaryString(this.pos)),posBits);
-            for(int i=0;i<this.dictSymbols.length;i++){
+            for(int i=1;i<(this.dictionary).length;i++){
                 if(Objects.equals(this.letter,this.dictSymbols[i])){
                     binarySymb=Backend.addLeadingZeros(Integer.parseInt(Integer.toBinaryString(i)),symbsBits);
                     break;
@@ -155,14 +116,19 @@ public class LZ78 {
 
             Log.writeLog(String.format("%" + (dictSize) + "s", this.dictionary),false);
             Log.writeLog(String.format("%" + (2+buffSize) + "s", this.buff),false);
-            Log.writeLog(String.format("%" + (2+1+(Math.min(dictSize,buffSize)/10)) + "d", this.len),false);
+            Log.writeLog(String.format("%" + (2+1+(Math.min(dictSize,buffSize)/10)) + "d", this.foundString),false);
             Log.writeLog(String.format("%" + (5) + "d", this.pos),false);
             Log.writeLog(String.format("%" + (2-(dictSize/10)+2+1) + "s", this.letter),false);
             Log.writeLog(String.format("%" + (1+posBits) + "s", binaryPos),false);
             Log.writeLog(String.format("%" + (1+symbsBits) + "s", binarySymb),false);
             Log.writeLog(" ",true);
 
-            currentPos+=1+this.len;
+            currentPos+=1+len;
+
+            if(len!=0){
+                pop(this.dictionary,this.dictionary[this.pos-1]);
+                push();
+            }
 
 //            if(currentPos<dictSize){
 //                try {//костыль :)
