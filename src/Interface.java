@@ -191,9 +191,16 @@ public class Interface extends Application {
         runButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
-                int dictSize=Integer.parseInt(dictSizeTF.getText());
-                int buffSize=Integer.parseInt(buffSizeTF.getText());
                 errorLabel.setText(" ");
+                int dictSize;
+                int buffSize;
+                try {
+                    dictSize = Integer.parseInt(dictSizeTF.getText());
+                    buffSize = Integer.parseInt(buffSizeTF.getText());
+                }catch (Exception e){
+                    errorLabel.setText("Error! Incorrect data given!");
+                    return;
+                }
 
                 if(dictSize<1 || buffSize<1){
                     errorLabel.setText("Error! Dictionary or Buffer size is lower than 1!");
