@@ -73,7 +73,7 @@ public class Interface extends Application {
         errorLabel.setFont(Font.font("System",20));
         labelGroup.getChildren().add(errorLabel);
 
-        ObservableList<String> algo = FXCollections.observableArrayList("LZ77");
+        ObservableList<String> algo = FXCollections.observableArrayList("LZ77","LZ78");
         ComboBox<String> algoCB = new ComboBox<>(algo);
         algoCB.setLayoutX(10);
         algoCB.setLayoutY(10);
@@ -91,7 +91,7 @@ public class Interface extends Application {
         modeCB.setMaxWidth(100);
         inputGroup.getChildren().add(modeCB);
 
-        Label bufSizeLabel = new Label("Buffer size:");
+                Label bufSizeLabel = new Label("Buffer size:");
         bufSizeLabel.setLayoutX(265);
         bufSizeLabel.setLayoutY(10-2);
         bufSizeLabel.setFont(Font.font("System",20));

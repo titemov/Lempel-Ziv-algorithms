@@ -23,7 +23,8 @@ public class Backend extends Interface {
                 ;
             }
         }else{
-            ;
+            LZ78 lz78 = new LZ78(new String[dictSize],"", "", 0, "", "");
+            result = lz78.encodeLZ78(input, dictSize, buffSize);
         }
 
         Log.writeLog("ANSWER:\n"+"bin: "+result+"\nhex: 0x"+binaryToHex(result),true);

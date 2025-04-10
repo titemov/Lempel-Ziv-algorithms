@@ -12,8 +12,8 @@ public class LZ78 {
     int pos;
     String letter;
     String binaryCode;
-    public LZ78(String buff, String foundString, int pos, String letter, String binaryCode){
-        this.dictionary= new String[dictSize];
+    public LZ78(String[] dictionary, String buff, String foundString, int pos, String letter, String binaryCode){
+        this.dictionary= dictionary;
         this.buff=buff;
         this.foundString=foundString;
         this.pos=pos;
@@ -37,7 +37,7 @@ public class LZ78 {
     }
     public static void push(String[] array,String elem){
         for(int i=0;i<array.length;i++){
-            if(Objects.equals(array[i],"")) {
+            if(Objects.equals(array[i],"") || Objects.equals(array[i],null)) {
                 array[i] = elem;
                 return;
             }
@@ -48,7 +48,7 @@ public class LZ78 {
         array[array.length-1]=elem;
     }
 
-    public static int findSubString(String buff, String[] dict, int dictSize){
+    public static int findSubString(String buff, String[] dict){
         int startPos = 0;
         String elem="";
 
@@ -68,7 +68,7 @@ public class LZ78 {
         this.dictSize=dictSize;
         this.buffSize=buffSize;
         this.dictSymbols = Backend.createDict(inputString);
-        Log.writeLog(" Dictionary: "+ Arrays.toString(this.dictSymbols)+"\n\n",true);
+        Log.writeLog("Dictionary: "+ Arrays.toString(this.dictSymbols)+"\n\n",true);
 
         int currentPos=0;
         int posBits=(int)(Math.ceil(Math.log(dictSize)/Math.log(2)));
@@ -77,12 +77,20 @@ public class LZ78 {
         String binaryPos="";
         String binarySymb="";
 
-        Log.writeLog(String.format("%" + "s", " Dict"),false);
-        Log.writeLog(String.format("%" + ((dictSize-4)+2+4) + "s", "Buff"),false);
-        Log.writeLog(String.format("%" + (2+3) + "s", "Pos"),false);
+        if(dictSize<2 || buffSize<4)
+        {
+            Log.writeLog(String.format("%" + "s", "D"), false);
+            Log.writeLog(String.format("%" + ((4 * dictSize + 2 * (dictSize - 1) + 2 )+ 2 - 1 + 1) + "s", "B"), false);
+            Log.writeLog(String.format("%" + (buffSize-1 + 2 + 5) + "s", "Found"), false);
+        }else {
+            Log.writeLog(String.format("%" + "s", "Dict"), false);
+            Log.writeLog(String.format("%" + (4 * dictSize + 2 * (dictSize - 1) + 2 + 2 - 4 + 4) + "s", "Buff"), false);
+            Log.writeLog(String.format("%" + (buffSize + 2 + 5 - 4) + "s", "Found"), false);
+        }
+        Log.writeLog(String.format("%" + (2+(3+buffSize*2-5)+3) + "s", "Pos"),false);
         Log.writeLog(String.format("%" + (2+6) + "s", "Letter"),false);
         Log.writeLog(String.format("%" + (2+4) + "s", "Code"),false);
-        Log.writeLog(" ",true);
+        Log.writeLog("",true);
 
         while(true){
             int len=0;
@@ -97,66 +105,50 @@ public class LZ78 {
                 //this done in case if last currentpos value will be bigger than inputString length
             }
 
-            this.pos = findSubString(this.buff,this.dictionary,this.dictSize);
+            this.pos = findSubString(this.buff,this.dictionary);
             if(this.pos!=0){
                 this.foundString=this.dictionary[this.pos-1];
                 len=this.dictionary[this.pos-1].length();
+            }else{
+                this.foundString="";
+            }
+            try {
+                this.letter = inputString.substring(currentPos + len, currentPos + len + 1);
+            }catch (Exception e){
+                this.letter = inputString.substring(currentPos + len);
             }
 
-
             binaryPos=Backend.addLeadingZeros(Integer.parseInt(Integer.toBinaryString(this.pos)),posBits);
-            for(int i=1;i<(this.dictionary).length;i++){
+            for(int i=0;i<(this.dictSymbols).length;i++){
                 if(Objects.equals(this.letter,this.dictSymbols[i])){
                     binarySymb=Backend.addLeadingZeros(Integer.parseInt(Integer.toBinaryString(i)),symbsBits);
                     break;
+                }else{
+                    binarySymb="";
                 }
             }
 
             this.finalCode+=(binaryPos+binarySymb);
 
-            Log.writeLog(String.format("%" + (dictSize) + "s", this.dictionary),false);
+            Log.writeLog(String.format("%" + (4*dictSize+2*(dictSize-1)+2) + "s", Arrays.toString(this.dictionary)),false);
             Log.writeLog(String.format("%" + (2+buffSize) + "s", this.buff),false);
-            Log.writeLog(String.format("%" + (2+1+(Math.min(dictSize,buffSize)/10)) + "d", this.foundString),false);
-            Log.writeLog(String.format("%" + (5) + "d", this.pos),false);
+            Log.writeLog(String.format("%" + (2+3+buffSize*2) + "s", this.foundString),false);
+            Log.writeLog(String.format("%" + (2+1) + "d", this.pos),false);
             Log.writeLog(String.format("%" + (2-(dictSize/10)+2+1) + "s", this.letter),false);
-            Log.writeLog(String.format("%" + (1+posBits) + "s", binaryPos),false);
+            Log.writeLog(String.format("%" + (5+2+posBits) + "s", binaryPos),false);
             Log.writeLog(String.format("%" + (1+symbsBits) + "s", binarySymb),false);
-            Log.writeLog(" ",true);
+            Log.writeLog("",true);
 
             currentPos+=1+len;
 
             if(len!=0){
-                pop(this.dictionary,this.dictionary[this.pos-1]);
-                push();
+                pop(this.dictionary,this.foundString);
+                push(this.dictionary,this.foundString);
+                push(this.dictionary,this.foundString+this.letter);
+            }else{
+                push(this.dictionary,this.letter);
             }
-
-//            if(currentPos<dictSize){
-//                try {//костыль :)
-//                    this.dictionary = inputString.substring(0, currentPos);
-//                }catch (Exception e){
-//                    this.dictionary = inputString.substring(0);
-//                }
-//            }else{
-//                if(currentPos>=inputString.length()) {
-//                    this.dictionary = inputString.substring(currentPos-dictSize);
-//                }else{
-//                    this.dictionary=inputString.substring(currentPos-dictSize,currentPos);
-//                }
-//            }
         }
         return this.finalCode;
     }
 }
-/*
-Пока есть символы для чтения:
-    в буфер заносится максимальное количество (по размеру буфера) доступных для чтения символов
-    рассматривается первый символ буфера
-    если есть подстрока начинающаяся с того же символа (этот же символ):
-        сравнить второй символ в буфере со вторым, после найденного, в словаре
-        делать до тех пор, пока есть совпадения или закончися размер словаря
-    заносится длина найденной подстроки (от нуля до размера словаря)
-    заносится позиция начала найденной подстроки в словаре (от нуля до размера словаря)
-    заносится начальный символ подстроки
-    последние три пункта кодируются в двоичную систему согласно таблице соответствия символов
-    (сделать автогенерируемую на основе лексикографического порядка символов)
-*/

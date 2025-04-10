@@ -97,9 +97,16 @@ public class LZ77 {
         String binaryPos="";
         String binarySymb="";
 
-        Log.writeLog(String.format("%" + "s", "Dict"),false);
-        Log.writeLog(String.format("%" + ((dictSize-4)+2+4) + "s", "Buff"),false);
-        Log.writeLog(String.format("%" + ((buffSize-4)+2+3) + "s", "Len"),false);
+        if(dictSize<4 || buffSize<4)
+        {
+            Log.writeLog(String.format("%" + "s", "D"),false);
+            Log.writeLog(String.format("%" + ((dictSize-1)+2+1) + "s", "B"),false);
+            Log.writeLog(String.format("%" + ((buffSize-1)+2+3) + "s", "Len"),false);
+        }else{
+            Log.writeLog(String.format("%" + "s", "Dict"),false);
+            Log.writeLog(String.format("%" + ((dictSize-4)+2+4) + "s", "Buff"),false);
+            Log.writeLog(String.format("%" + ((buffSize-4)+2+3) + "s", "Len"),false);
+        }
         Log.writeLog(String.format("%" + (2+3) + "s", "Pos"),false);
         Log.writeLog(String.format("%" + (2+6) + "s", "Letter"),false);
         Log.writeLog(String.format("%" + (2+4) + "s", "Code"),false);
