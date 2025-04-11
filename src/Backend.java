@@ -50,10 +50,12 @@ public class Backend extends Interface {
                 individual+=string.substring(i,i+1);
             }
         }
-        String[] dict = new String[individual.length()];
-        for(int i=0;i<dict.length;i++){
+        String[] dict = new String[individual.length()+1];
+        for(int i=0;i<dict.length-1;i++){
             dict[i]=individual.substring(i,i+1);
         }
+        dict[dict.length-1]="";
+        //null symbol will be encoded
         Arrays.sort(dict);
         return dict;
     }
