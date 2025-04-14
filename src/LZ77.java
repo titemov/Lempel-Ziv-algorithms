@@ -1,5 +1,6 @@
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.regex.Pattern;
 
 public class LZ77 {
     int dictSize;
@@ -34,10 +35,9 @@ public class LZ77 {
             return result;
         }
 
-        String[] splitted = dict.split(elem);
+        String[] splitted = dict.split(Pattern.quote(elem));
 
-        for(int i=1;i<splitted.length;i++){
-            //first in splitted always skipped because standing before "elem"
+        for(int i=1;i<splitted.length;i++){//first in splitted always skipped because standing before "elem"
             for(int n=0;n<minLen;n++){
                 try {
                     //System.out.println("COMPARING: "+buff.substring(0, n + 1)+" "+(elem+splitted[i].substring(0, n)));
@@ -54,7 +54,7 @@ public class LZ77 {
                 }
             }
         }
-
+        //System.out.println(Arrays.toString(splitted));
         if(splitted.length==1 && splitted[0].length() != dict.length()){
             startPos=dict.length()-1;
             len=1;
@@ -64,7 +64,6 @@ public class LZ77 {
                 len=1;
             }
         }
-        //System.out.println("ans[0] "+dict.substring(startPos,startPos+len));
 
         for(int i=0;i<dict.length()-result[1]+1;i++){
             if(Objects.equals(buff.substring(0,len),dict.substring(i,i+len))){
@@ -149,8 +148,8 @@ public class LZ77 {
             Log.writeLog(String.format("%" + (dictSize) + "s", this.dictionary),false);
             Log.writeLog(String.format("%" + (2+buffSize) + "s", this.buff),false);
             Log.writeLog(String.format("%" + (2+1+(Math.min(dictSize,buffSize)/100)) + "d", this.len),false);
-            Log.writeLog(String.format("%" + (5) + "d", this.pos),false);
-            Log.writeLog(String.format("%" + (2-(dictSize/100)+2+1) + "s", this.letter),false);
+            Log.writeLog(String.format("%" + (3-1+2+String.valueOf(this.pos).length()) + "d", this.pos),false);
+            Log.writeLog(String.format("%" + ((3-String.valueOf(this.pos).length())+2+1) + "s", this.letter),false);
             Log.writeLog(String.format("%" + ((6-1)+2+lenBits) + "s", binaryLen),false);
             Log.writeLog(String.format("%" + (1+posBits) + "s", binaryPos),false);//posBits might be equal to zero
             Log.writeLog(String.format("%" + (1+symbsBits) + "s", binarySymb),false);
@@ -174,17 +173,8 @@ public class LZ77 {
         }
         return this.finalCode;
     }
+
+    public String decodeLZ77(String inputString, int dictSize, int buffSize){
+        return this.finalCode;
+    }
 }
-/*
-Пока есть символы для чтения:
-    в буфер заносится максимальное количество (по размеру буфера) доступных для чтения символов
-    рассматривается первый символ буфера
-    если есть подстрока начинающаяся с того же символа (этот же символ):
-        сравнить второй символ в буфере со вторым, после найденного, в словаре
-        делать до тех пор, пока есть совпадения или закончися размер словаря
-    заносится длина найденной подстроки (от нуля до размера словаря)
-    заносится позиция начала найденной подстроки в словаре (от нуля до размера словаря)
-    заносится начальный символ подстроки
-    последние три пункта кодируются в двоичную систему согласно таблице соответствия символов
-    (сделать автогенерируемую на основе лексикографического порядка символов)
-*/

@@ -3,14 +3,13 @@ import java.util.Objects;
 import java.util.Random;
 
 public class Backend extends Interface {
+    public static String result;
     public static int rng(int low, int high) {
         Random r = new Random();
         return r.nextInt(high - low) + low;
     }
 
-    public static String run(String algo, String mode, String input, int dictSize, int buffSize){
-        String result="";
-
+    public static void run(String algo, String mode, String input, int dictSize, int buffSize){
         Log.initialEntry();
         Log.writeLog("Input: "+input+"\n",true);
         Log.writeLog("Algorithm: "+algo+"\nMode: "+mode+"\n",true);
@@ -28,8 +27,6 @@ public class Backend extends Interface {
         }
 
         Log.writeLog("ANSWER:\n"+"bin: "+result+"\nhex: 0x"+binaryToHex(result),true);
-
-        return result;
     }
 
     public static String[] createDict(String string){
@@ -54,8 +51,7 @@ public class Backend extends Interface {
         for(int i=0;i<dict.length-1;i++){
             dict[i]=individual.substring(i,i+1);
         }
-        dict[dict.length-1]="";
-        //null symbol will be encoded
+        dict[dict.length-1]="";//null symbol will be encoded
         Arrays.sort(dict);
         return dict;
     }

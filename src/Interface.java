@@ -13,8 +13,6 @@ import javafx.stage.Stage;
 import java.util.Objects;
 
 public class Interface extends Application {
-    String ans;
-
     private String[] showDictionary(String mode, String input){
         Stage newStage = new Stage();
         Group root = new Group();
@@ -45,7 +43,6 @@ public class Interface extends Application {
                 s+=(dict[i]+"\t"+binarySymb+"\n");
             }
             showDictArea.setText(s);
-
         }else{
             ;//создает кнопку и область ввода. По нажатию кнопки считывается ввод и возвращается через dict
             //dict пересоздается с нужным размером после нажатия кнопки.
@@ -158,9 +155,9 @@ public class Interface extends Application {
             public void handle(ActionEvent actionEvent) {
                 if(!Objects.equals("",outputArea.getText())) {
                     if (Objects.equals("binary", numSysCB.getValue())) {
-                        outputArea.setText(ans);
+                        outputArea.setText(Backend.result);
                     } else {
-                        outputArea.setText("0x" + Backend.binaryToHex(ans));
+                        outputArea.setText("0x" + Backend.binaryToHex(Backend.result));
                     }
                 }
             }
@@ -206,18 +203,27 @@ public class Interface extends Application {
                     errorLabel.setText("Error! Dictionary or Buffer size is lower than 1!");
                     return;
                 }
+                if(dictSize>26 || buffSize>50){
+                    errorLabel.setText("Error! Dictionary or Buffer size is too big!");
+                    return;
+                }
+
                 String inputString=inputArea.getText();
                 if(inputString==""){
                     errorLabel.setText("Error! No input text!");
                     return;
                 }
-
-                ans=Backend.run(algoCB.getValue(),modeCB.getValue(),inputString,dictSize,buffSize);
+                try {
+                    Backend.run(algoCB.getValue(), modeCB.getValue(), inputString, dictSize, buffSize);
+                }catch (Exception e){
+                    errorLabel.setText("Error!");
+                    e.printStackTrace();
+                }
 
                 if(Objects.equals("binary",numSysCB.getValue())){
-                    outputArea.setText(ans);
+                    outputArea.setText(Backend.result);
                 }else{
-                    outputArea.setText("0x"+Backend.binaryToHex(ans));
+                    outputArea.setText("0x"+Backend.binaryToHex(Backend.result));
                 }
 
             }
