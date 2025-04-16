@@ -1,7 +1,6 @@
 # Lempel-Ziv-algorithms
-__WORK IN PROGRESS__
 
-Lempel-Ziv based algorithms: LZ77, LZ78. (decode wip)
+This program can compress and decompress strings using LZ77 or LZ78 algorithms.
 
 ![Main Window](lz77.png)
 
