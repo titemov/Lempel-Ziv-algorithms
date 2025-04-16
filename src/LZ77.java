@@ -22,7 +22,7 @@ public class LZ77 {
         this.binaryCode=binaryCode;
     }
 
-    public static int[] findSubString(String buff, String dict, int dictSize){
+    private static int[] findSubString(String buff, String dict, int dictSize){
         int[] result = {0,0};//startPos,len
         int startPos = 0;
         int len = 0;
@@ -81,6 +81,29 @@ public class LZ77 {
         return result;
     }
 
+    private String[][] codeBreakdown(String input, int dictSize, int buffSize){   //func to breakdown binary code
+        String[][] result;
+
+        int dictSubBlock = (int)Math.ceil(Math.log(dictSize)/Math.log(2));
+        int buffSubBlock = (int)Math.ceil(Math.log(buffSize)/Math.log(2));
+        int letterSubBlock = (int)Math.ceil(Math.log((Backend.dict).length)/Math.log(2));
+        int blockLen = dictSubBlock+buffSubBlock+letterSubBlock;
+
+        int amountOfBlocks = (int)Math.floor(input.length()/blockLen);
+
+        result = new String[amountOfBlocks][3];
+
+        for(int i=0;i<result.length;i++){
+            String temp = input.substring(i*blockLen,(i+1)*blockLen);
+            result[i][0] = temp.substring(0,dictSubBlock);
+            result[i][1] = temp.substring(dictSubBlock,dictSubBlock+buffSubBlock);
+            result[i][2] = temp.substring(dictSubBlock+buffSubBlock);
+            //System.out.println(Arrays.toString(result[i]));
+        }
+
+        return result;
+    }
+
     public String encodeLZ77(String inputString, int dictSize, int buffSize){
         this.dictSize=dictSize;
         this.buffSize=buffSize;
@@ -132,11 +155,11 @@ public class LZ77 {
                 this.letter = inputString.substring(currentPos + this.len);
             }
 
-            binaryLen=Backend.addLeadingZeros(Integer.parseInt(Integer.toBinaryString(this.len)),lenBits);
-            binaryPos=Backend.addLeadingZeros(Integer.parseInt(Integer.toBinaryString(this.pos)),posBits);
+            binaryLen=Backend.addLeadingZeros(Integer.toBinaryString(this.len),lenBits);
+            binaryPos=Backend.addLeadingZeros(Integer.toBinaryString(this.pos),posBits);
             for(int i=0;i<this.dictSymbols.length;i++){
                 if(Objects.equals(this.letter,this.dictSymbols[i])){
-                    binarySymb=Backend.addLeadingZeros(Integer.parseInt(Integer.toBinaryString(i)),symbsBits);
+                    binarySymb=Backend.addLeadingZeros(Integer.toBinaryString(i),symbsBits);
                     break;
                 }else{
                     binarySymb="";
@@ -149,9 +172,9 @@ public class LZ77 {
             Log.writeLog(String.format("%" + (2+buffSize) + "s", this.buff),false);
             Log.writeLog(String.format("%" + (2+1+(Math.min(dictSize,buffSize)/100)) + "d", this.len),false);
             Log.writeLog(String.format("%" + (3-1+2+String.valueOf(this.pos).length()) + "d", this.pos),false);
-            Log.writeLog(String.format("%" + ((3-String.valueOf(this.pos).length())+2+1) + "s", this.letter),false);
+            Log.writeLog(String.format("%" + ((3-String.valueOf(this.pos).length())+2+1)+"s",this.letter),false);
             Log.writeLog(String.format("%" + ((6-1)+2+lenBits) + "s", binaryLen),false);
-            Log.writeLog(String.format("%" + (1+posBits) + "s", binaryPos),false);//posBits might be equal to zero
+            Log.writeLog(String.format("%" + (1+posBits) + "s", binaryPos),false);//posBits might be = 0
             Log.writeLog(String.format("%" + (1+symbsBits) + "s", binarySymb),false);
             Log.writeLog("",true);
 
@@ -175,6 +198,77 @@ public class LZ77 {
     }
 
     public String decodeLZ77(String inputString, int dictSize, int buffSize){
+        String temp = Backend.hexToBinary(inputString);
+        if(temp != null) inputString=temp;
+        //System.out.println(inputString);
+        String[][] code = codeBreakdown(inputString,dictSize,buffSize);
+
+        this.dictSize=dictSize;
+        this.dictSymbols=Backend.dict;
+        Log.writeLog("Dictionary: "+ Arrays.toString(this.dictSymbols)+"\n\n",true);
+
+        int index=0;
+        String binaryLen=code[0][0];
+        String binaryPos=code[0][1];
+        String binarySymb=code[0][2];
+
+        int codeBlockLen = binaryLen.length()+binaryPos.length()+binarySymb.length();
+
+        if(dictSize<4)
+        {
+            Log.writeLog(String.format("%" + "s", "C"),false);
+            Log.writeLog(String.format("%" + ((codeBlockLen+2-1)+2+1) + "s", "D"),false);
+            Log.writeLog(String.format("%" + ((dictSize-1)+2+3) + "s", "Len"),false);
+        }else{
+            Log.writeLog(String.format("%" + "s", "Code"),false);
+            Log.writeLog(String.format("%" + ((codeBlockLen+2-4)+2+4) + "s", "Dict"),false);
+            Log.writeLog(String.format("%" + ((dictSize-4)+2+3) + "s", "Len"),false);
+        }
+        Log.writeLog(String.format("%" + (2+3) + "s", "Pos"),false);
+        Log.writeLog(String.format("%" + (2+6) + "s", "Letter"),false);
+        Log.writeLog(String.format("%" + (2+Math.max(dictSize,9)) + "s", "Substring"),false);
+        Log.writeLog("",true);
+
+        for(int i=0;i<code.length;i++){
+            binaryLen=code[index][0];
+            binaryPos=code[index][1];
+            binarySymb=code[index][2];
+
+            this.len=Integer.parseInt(binaryLen,2);
+            this.pos=Integer.parseInt(binaryPos,2);
+            try {
+                this.letter = this.dictSymbols[Integer.parseInt(binarySymb,2)];
+                if(this.letter==null) throw new Exception();
+            }catch (Exception e){
+                this.letter = "?";
+            }
+
+            //while decoding buff string used to represent substring (no need ?)'
+            if(this.len!=0){
+                this.buff= (this.dictionary.substring(this.pos-(dictSize-this.dictionary.length()),this.pos-(dictSize-this.dictionary.length())+this.len))+this.letter;
+            }else this.buff=this.letter;
+
+            this.finalCode += this.buff;
+
+            Log.writeLog(String.format("%" + (binaryLen.length()) + "s", binaryLen),false);
+            Log.writeLog(String.format("%" + (1+binaryPos.length()) + "s", binaryPos),false);
+            Log.writeLog(String.format("%" + (1+binarySymb.length()) + "s", binarySymb),false);
+            Log.writeLog(String.format("%" + (2+dictSize) + "s", this.dictionary),false);
+            Log.writeLog(String.format("%" + (2+1+(dictSize/100)) + "d", this.len),false);
+            Log.writeLog(String.format("%" + (3-1+2+String.valueOf(this.pos).length()) + "d", this.pos),false);
+            Log.writeLog(String.format("%" + ((3-String.valueOf(this.pos).length())+2+1)+"s",this.letter),false);
+            Log.writeLog(String.format("%" + ((6-1)+2+Math.max(dictSize,9)) + "s", this.buff),false);
+            Log.writeLog("",true);
+
+            index+=1;
+
+            if(index+1+this.len<=dictSize){
+                this.dictionary+=this.buff;
+            }else{
+                this.dictionary=(this.dictionary).substring(this.buff.length()-(dictSize-this.dictionary.length()))+this.buff;
+            }
+        }
+        Log.writeLog("ANSWER: "+this.finalCode,true);
         return this.finalCode;
     }
 }

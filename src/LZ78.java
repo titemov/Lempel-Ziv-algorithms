@@ -21,7 +21,7 @@ public class LZ78 {
         this.binaryCode=binaryCode;
     }
 
-    public static void pop(String[] array, String elem){
+    private static void pop(String[] array, String elem){
         int index=-1;
         for(int i=0;i<array.length;i++){
             if(Objects.equals(array[i],elem)){
@@ -35,7 +35,7 @@ public class LZ78 {
         }
         array[array.length-1]="";
     }
-    public static void push(String[] array,String elem){
+    private static void push(String[] array,String elem){
         for(int i=0;i<array.length;i++){
             if(Objects.equals(array[i],"") || Objects.equals(array[i],null)) {
                 array[i] = elem;
@@ -48,7 +48,7 @@ public class LZ78 {
         array[array.length-1]=elem;
     }
 
-    public static int findSubString(String buff, String[] dict){
+    private static int findSubString(String buff, String[] dict){
         int startPos = 0;
         String elem="";
 
@@ -63,6 +63,27 @@ public class LZ78 {
             }
         }
         return startPos;
+    }
+
+    private String[][] codeBreakdown(String input, int dictSize){   //func to breakdown binary code
+        String[][] result;
+
+        int dictSubBlock = (int)Math.ceil(Math.log(dictSize)/Math.log(2));
+        int letterSubBlock = (int)Math.ceil(Math.log((Backend.dict).length)/Math.log(2));
+        int blockLen = dictSubBlock+letterSubBlock;
+
+        int amountOfBlocks = (int)Math.floor(input.length()/blockLen);
+
+        result = new String[amountOfBlocks][2];
+
+        for(int i=0;i<result.length;i++){
+            String temp = input.substring(i*blockLen,(i+1)*blockLen);
+            result[i][0] = temp.substring(0,dictSubBlock);
+            result[i][1] = temp.substring(dictSubBlock);
+            //System.out.println(Arrays.toString(result[i]));
+        }
+
+        return result;
     }
 
     public String encodeLZ78(String inputString,int dictSize, int buffSize){
@@ -119,10 +140,10 @@ public class LZ78 {
                 this.letter = inputString.substring(currentPos + len);
             }
 
-            binaryPos=Backend.addLeadingZeros(Integer.parseInt(Integer.toBinaryString(this.pos)),posBits);
+            binaryPos=Backend.addLeadingZeros(Integer.toBinaryString(this.pos),posBits);
             for(int i=0;i<(this.dictSymbols).length;i++){
                 if(Objects.equals(this.letter,this.dictSymbols[i])){
-                    binarySymb=Backend.addLeadingZeros(Integer.parseInt(Integer.toBinaryString(i)),symbsBits);
+                    binarySymb=Backend.addLeadingZeros(Integer.toBinaryString(i),symbsBits);
                     break;
                 }else{
                     binarySymb="";
@@ -154,6 +175,79 @@ public class LZ78 {
     }
 
     public String decodeLZ78(String inputString, int dictSize, int buffSize){
+        String temp = Backend.hexToBinary(inputString);
+        if(temp != null) inputString=temp;
+        //System.out.println(inputString);
+        String[][] code = codeBreakdown(inputString,dictSize);
+
+        this.dictSize=dictSize;
+        this.dictSymbols=Backend.dict;
+        Log.writeLog("Dictionary: "+ Arrays.toString(this.dictSymbols)+"\n\n",true);
+
+        int index=0;
+        String binaryPos=code[0][0];
+        String binarySymb=code[0][1];
+
+        int codeBlockLen = binaryPos.length()+binarySymb.length();
+
+        if(dictSize<4)
+        {
+            Log.writeLog(String.format("%" + "s", "C"),false);
+            Log.writeLog(String.format("%" + ((codeBlockLen+1-1)+2+1) + "s", "D"),false);
+            Log.writeLog(String.format("%" + (((4*dictSize+2*(dictSize-1)+2)-1)+2+3) + "s", "Pos"),false);
+        }else{
+            Log.writeLog(String.format("%" + "s", "Code"),false);
+            Log.writeLog(String.format("%" + (Math.max(0,codeBlockLen+1-4)+2+4) + "s", "Dict"),false);
+            Log.writeLog(String.format("%" + (((4*dictSize+2*(dictSize-1)+2)-4)+2+3) + "s", "Pos"),false);
+        }
+        Log.writeLog(String.format("%" + (2+6) + "s", "Letter"),false);
+        Log.writeLog(String.format("%" + (2+Math.max(dictSize,9)) + "s", "Substring"),false);
+        Log.writeLog("",true);
+
+        for(int i=0;i<code.length;i++){
+            binaryPos=code[index][0];
+            binarySymb=code[index][1];
+
+            this.pos=Integer.parseInt(binaryPos,2);
+            try {
+                this.letter = this.dictSymbols[Integer.parseInt(binarySymb,2)];
+                if(this.letter==null) throw new Exception();
+            }catch (Exception e){
+                this.letter = "?";
+            }
+
+            //while decoding buff string used to contain current substring (no need ?)'
+            if(this.pos==0){
+                this.buff=this.letter;
+            }else{
+                this.foundString=this.dictionary[this.pos-1];
+                if(this.foundString==null) this.foundString="?";
+                this.buff=this.foundString+this.letter;
+            }
+
+            this.finalCode += this.buff;
+
+            Log.writeLog(String.format("%" + (binaryPos.length()) + "s", binaryPos),false);
+            Log.writeLog(String.format("%" + (1+binarySymb.length()) + "s", binarySymb),false);
+            Log.writeLog(String.format("%" + (Math.max(4-codeBlockLen+1,0)+2+(4*dictSize+2*(dictSize-1)+2)) + "s", Arrays.toString(this.dictionary)),false);
+            Log.writeLog(String.format("%" + (2+String.valueOf(this.pos).length()) + "d", this.pos),false);
+            Log.writeLog(String.format("%" + ((3-String.valueOf(this.pos).length())+2+1)+"s",this.letter),false);
+            Log.writeLog(String.format("%" + ((6-1)+2+Math.max(dictSize,9)) + "s", this.buff),false);
+            Log.writeLog("",true);
+
+            if(this.pos==0){
+                push(this.dictionary,this.letter);
+            }else{
+                pop(this.dictionary,this.foundString);
+                push(this.dictionary,this.foundString);
+                push(this.dictionary,this.foundString+this.letter);
+            }
+
+
+            index+=1;
+        }
+        Log.writeLog("ANSWER: "+this.finalCode,true);
+
         return this.finalCode;
     }
 }

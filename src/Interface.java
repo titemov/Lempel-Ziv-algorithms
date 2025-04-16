@@ -10,52 +10,10 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 public class Interface extends Application {
-    private String[] showDictionary(String mode, String input){
-        Stage newStage = new Stage();
-        Group root = new Group();
-        newStage.setTitle("Dictionary");
-        newStage.setWidth(400);
-        newStage.setHeight(400);
-
-        String[] dict = null;
-
-        if(Objects.equals(mode,"Encode")){
-            TextArea showDictArea = new TextArea();
-            showDictArea.setLayoutX(5);
-            showDictArea.setLayoutY(5);
-            showDictArea.setMinSize(375,350);
-            showDictArea.setMaxSize(375,350);
-            showDictArea.setWrapText(true);
-            showDictArea.setEditable(false);
-            showDictArea.setFont(Font.font("Consolas",20));
-            root.getChildren().add(showDictArea);
-
-            dict = Backend.createDict(input);
-            String s="";
-            String binarySymb;
-            int symbsBits=(int)(Math.ceil(Math.log(dict.length)/Math.log(2)));
-
-            for(int i=0;i<dict.length;i++){
-                binarySymb=Backend.addLeadingZeros(Integer.parseInt(Integer.toBinaryString(i)),symbsBits);
-                s+=(dict[i]+"\t"+binarySymb+"\n");
-            }
-            showDictArea.setText(s);
-        }else{
-            ;//создает кнопку и область ввода. По нажатию кнопки считывается ввод и возвращается через dict
-            //dict пересоздается с нужным размером после нажатия кнопки.
-        }
-
-        Scene newScene = new Scene(root,Color.SNOW);
-        newStage.setScene(newScene);
-        newStage.setResizable(false);
-        newStage.show();
-
-        return dict;
-    }
-
     @Override
     public void start(Stage stage){
 
@@ -79,16 +37,27 @@ public class Interface extends Application {
         algoCB.setMaxWidth(75);
         inputGroup.getChildren().add(algoCB);
 
-        ObservableList<String> mode = FXCollections.observableArrayList("Encode");
+        ObservableList<String> mode = FXCollections.observableArrayList("Encode","Decode");
         ComboBox<String> modeCB = new ComboBox<>(mode);
         modeCB.setLayoutX(100);
         modeCB.setLayoutY(10);
         modeCB.setValue("Encode");
         modeCB.setMinWidth(100);
         modeCB.setMaxWidth(100);
+        modeCB.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                try{
+                    Backend.newStage.close();
+                    Backend.dict=null;
+                }catch (Exception e){
+                    System.out.println("No dictionary window to close (interface.java)");
+                }
+            }
+        });
         inputGroup.getChildren().add(modeCB);
 
-                Label bufSizeLabel = new Label("Buffer size:");
+        Label bufSizeLabel = new Label("Buffer size:");
         bufSizeLabel.setLayoutX(265);
         bufSizeLabel.setLayoutY(10-2);
         bufSizeLabel.setFont(Font.font("System",20));
@@ -153,11 +122,13 @@ public class Interface extends Application {
         numSysCB.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
-                if(!Objects.equals("",outputArea.getText())) {
-                    if (Objects.equals("binary", numSysCB.getValue())) {
-                        outputArea.setText(Backend.result);
-                    } else {
-                        outputArea.setText("0x" + Backend.binaryToHex(Backend.result));
+                if(Objects.equals(modeCB.getValue(),"Encode")) {
+                    if (!Objects.equals("", outputArea.getText())) {
+                        if (Objects.equals("binary", numSysCB.getValue())) {
+                            outputArea.setText(Backend.result);
+                        } else {
+                            outputArea.setText("0x" + Backend.binaryToHex(Backend.result));
+                        }
                     }
                 }
             }
@@ -172,7 +143,11 @@ public class Interface extends Application {
             @Override
             public void handle(ActionEvent actionEvent) {
                 if(!Objects.equals("",inputArea.getText())){
-                    showDictionary(modeCB.getValue(),inputArea.getText());
+                    try{
+                        Backend.showDictionary(modeCB.getValue(),inputArea.getText());
+                    }catch (Exception e) {
+                        errorLabel.setText("Error! Dictionary input error!");
+                    }
                 }else{
                     errorLabel.setText("Error! No input text!");
                 }
@@ -203,16 +178,17 @@ public class Interface extends Application {
                     errorLabel.setText("Error! Dictionary or Buffer size is lower than 1!");
                     return;
                 }
-                if(dictSize>26 || buffSize>50){
-                    errorLabel.setText("Error! Dictionary or Buffer size is too big!");
+                if(dictSize>50 || buffSize>50){
+                    errorLabel.setText("Error! Dictionary or Buffer size is more than 50!");
                     return;
                 }
 
-                String inputString=inputArea.getText();
+                String inputString = inputArea.getText();
                 if(inputString==""){
                     errorLabel.setText("Error! No input text!");
                     return;
                 }
+                inputString=Backend.removeBackslashN(inputString);
                 try {
                     Backend.run(algoCB.getValue(), modeCB.getValue(), inputString, dictSize, buffSize);
                 }catch (Exception e){
@@ -251,7 +227,7 @@ public class Interface extends Application {
 
         Scene scene = new Scene(mainGroup, Color.SNOW);
         stage.setScene(scene);
-        stage.setTitle("Lempel-Ziv algorithm");
+        stage.setTitle("Lempel-Ziv algorithms");
         stage.setWidth(800);
         stage.setHeight(600);
         stage.setResizable(false);
