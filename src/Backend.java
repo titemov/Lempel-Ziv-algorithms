@@ -45,7 +45,9 @@ public class Backend extends Interface {
                     result = lz77.decodeLZ77(input, dictSize, buffSize);
                 }
             }
-        }else{
+            return;
+        }
+        if(Objects.equals(algo,"LZ78")){
             if(Objects.equals(mode,"Encode")) {
                 LZ78 lz78 = new LZ78(new String[dictSize], "", "", 0, "", "");
                 result = lz78.encodeLZ78(input, dictSize, buffSize);
@@ -59,15 +61,14 @@ public class Backend extends Interface {
                     result = lz78.decodeLZ78(input, dictSize, buffSize);
                 }
             }
+            return;
         }
-
-
     }
 
-    public static void showDictionary(String mode, String input){//rework that func
-        try{
+    public static void showDictionary(String mode, String input) {//rework that func
+        try {
             newStage.close();
-        }catch (Exception e){
+        } catch (Exception e) {
             System.out.println("No dictionary window to close (Backend.java)");
         }
         newStage = new Stage();
@@ -76,64 +77,51 @@ public class Backend extends Interface {
         newStage.setWidth(400);
         newStage.setHeight(400);
 
-        if(Objects.equals(mode,"Encode")){
-            Backend.dict=null;
-            TextArea showDictArea = new TextArea();
-            showDictArea.setLayoutX(5);
-            showDictArea.setLayoutY(5);
-            showDictArea.setMinSize(375,350);
-            showDictArea.setMaxSize(375,350);
-            showDictArea.setWrapText(true);
-            showDictArea.setEditable(false);
-            showDictArea.setFont(Font.font("Consolas",20));
-            root.getChildren().add(showDictArea);
+        final int[] lines = {3};
+        GridPane gridPane = new GridPane();
+        ColumnConstraints column0 = new ColumnConstraints(25);//index
+        ColumnConstraints column1 = new ColumnConstraints(40);//"letter"
+        ColumnConstraints column2 = new ColumnConstraints(40);//letterTF
+        ColumnConstraints column3 = new ColumnConstraints(40);//"code"
+        ColumnConstraints column4 = new ColumnConstraints(200);//codeTF
+        column4.setHgrow(Priority.ALWAYS);
+        gridPane.getColumnConstraints().add(column0);
+        gridPane.getColumnConstraints().add(column1);
+        gridPane.getColumnConstraints().add(column2);
+        gridPane.getColumnConstraints().add(column3);
+        gridPane.getColumnConstraints().add(column4);
+        gridPane.setGridLinesVisible(false);
+        TextField[] letterTF = new TextField[1000];
+        TextField[] codeTF = new TextField[1000];
+        //those arrays size must be dynamically changed, but I don't care XD
 
-            dict = Backend.createDict(input);
-            String s="";
-            String binarySymb;
+        Label errorLabel = new Label(" ");
+        errorLabel.setLayoutX(75 - 3);
+        errorLabel.setLayoutY(330 + 3);
+        root.getChildren().add(errorLabel);
+
+        if(Objects.equals(mode,"Encode")) {
+            Backend.dict=null;
+            Backend.dict = Backend.createDict(input);
+            lines[0] = (Backend.dict).length;
+
             int symbsBits=(int)(Math.ceil(Math.log(dict.length)/Math.log(2)));
-
-            for(int i = 0; i< dict.length; i++){
-                binarySymb=Backend.addLeadingZeros(Integer.toBinaryString(i),symbsBits);
-                s+=(dict[i]+"\t"+binarySymb+"\n");
+            for (int i = 0; i < lines[0]; i++) {
+                letterTF[i] = new TextField(Backend.dict[i]);
+                letterTF[i].setEditable(false);
+                codeTF[i] = new TextField(Backend.addLeadingZeros(Integer.toBinaryString(i),symbsBits));
+                codeTF[i].setEditable(false);
+                gridPane.add(new Label((i + 1) + ")"), 0, i);
+                gridPane.add(new Label("Letter: "), 1, i);
+                gridPane.add(letterTF[i], 2, i);
+                gridPane.add(new Label(" Code: "), 3, i);
+                gridPane.add(codeTF[i], 4, i);
             }
-            showDictArea.setText(s);
-
-            Scene newScene = new Scene(root, Color.SNOW);
-            newStage.setScene(newScene);
-            newStage.setResizable(false);
-            newStage.show();
         }else{
-            Backend.dict=null;
-            //создает кнопку и область ввода. По нажатию кнопки считывается ввод и возвращается через dict
-            //dict пересоздается с нужным размером после нажатия кнопки.
-            final int[] lines = {3};
-            GridPane gridPane = new GridPane();
-            ColumnConstraints column0 = new ColumnConstraints(25);//index
-            ColumnConstraints column1 = new ColumnConstraints(40);//"letter"
-            ColumnConstraints column2 = new ColumnConstraints(40);//letterTF
-            ColumnConstraints column3 = new ColumnConstraints(40);//"code"
-            ColumnConstraints column4 = new ColumnConstraints(200);//codeTF
-            column4.setHgrow(Priority.ALWAYS);
-            gridPane.getColumnConstraints().add(column0);
-            gridPane.getColumnConstraints().add(column1);
-            gridPane.getColumnConstraints().add(column2);
-            gridPane.getColumnConstraints().add(column3);
-            gridPane.getColumnConstraints().add(column4);
-            gridPane.setGridLinesVisible(false);
-            TextField[] letterTF = new TextField[1000];
-            TextField[] codeTF = new TextField[1000];
-            //those arrays size must be dynamically changed, but I don't care XD
-
-            Label errorLabel = new Label(" ");
-            errorLabel.setLayoutX(75-3);
-            errorLabel.setLayoutY(330+3);
-            root.getChildren().add(errorLabel);
-
-            if(Backend.dict==null) {
+            if (Backend.dict == null) {
                 for (int i = 0; i < lines[0]; i++) {
                     letterTF[i] = new TextField();
-                    if(i==0) codeTF[i] = new TextField("0");
+                    if (i == 0) codeTF[i] = new TextField("0");
                     else codeTF[i] = new TextField();
                     gridPane.add(new Label((i + 1) + ")"), 0, i);
                     gridPane.add(new Label("Letter: "), 1, i);
@@ -141,8 +129,8 @@ public class Backend extends Interface {
                     gridPane.add(new Label(" Code: "), 3, i);
                     gridPane.add(codeTF[i], 4, i);
                 }
-            }else{
-                lines[0]=(Backend.dict).length;
+            } else {
+                lines[0] = (Backend.dict).length;
                 for (int i = 0; i < lines[0]; i++) {
                     letterTF[i] = new TextField(Backend.dict[i]);
                     codeTF[i] = new TextField(Integer.toBinaryString(i));
@@ -154,10 +142,10 @@ public class Backend extends Interface {
                 }
             }
 
-            Button addLineButton = new Button("Add line");
-            addLineButton.setLayoutX(300);
-            addLineButton.setLayoutY(330);
-            addLineButton.setPrefSize(75,15);
+            Button addLineButton = new Button("+");
+            addLineButton.setLayoutX(350);
+            addLineButton.setLayoutY(10-2);
+            addLineButton.setPrefSize(25, 15);
             addLineButton.setOnAction(new EventHandler<ActionEvent>() {
                 @Override
                 public void handle(ActionEvent actionEvent) {
@@ -171,7 +159,7 @@ public class Backend extends Interface {
                         gridPane.add(new Label(" Code: "), 3, lines[0]);
                         gridPane.add(codeTF[lines[0]], 4, lines[0]);
                         lines[0] += 1;
-                    }catch (Exception e){
+                    } catch (Exception e) {
                         errorLabel.setText("Error! Cannot add more lines");
                     }
                 }
@@ -181,30 +169,30 @@ public class Backend extends Interface {
             Button enterButton = new Button("Enter!");
             enterButton.setLayoutX(10);
             enterButton.setLayoutY(330);
-            enterButton.setPrefSize(50,15);
+            enterButton.setPrefSize(50, 15);
             enterButton.setOnAction(new EventHandler<ActionEvent>() {
                 @Override
-                public void handle(ActionEvent actionEvent){
+                public void handle(ActionEvent actionEvent) {
                     errorLabel.setText("Dictionary written. Window can be closed");
-                    int k=0;
-                    while(true){
-                        try{
-                            if(Objects.equals(codeTF[k].getText(),"")){
+                    int k = 0;
+                    while (true) {
+                        try {
+                            if (Objects.equals(codeTF[k].getText(), "")) {
                                 throw new Exception();
-                            }else k+=1;
-                        }catch (Exception e){
+                            } else k += 1;
+                        } catch (Exception e) {
                             break;
                         }
                     }
                     dict = new String[k];
                     for (int i = 0; i < k; i++) {
                         try {
-                            if(Integer.parseInt(codeTF[i].getText(), 2)!=0) {
-                                dict[Integer.parseInt(codeTF[i].getText(), 2)] = (letterTF[i].getText()).substring(0, 1);
-                            }else dict[Integer.parseInt(codeTF[i].getText(), 2)] = (letterTF[i].getText());
+                            if (Integer.parseInt(codeTF[i].getText(), 2) != 0) {
+                                dict[Integer.parseInt(codeTF[i].getText(), 2)]=(letterTF[i].getText()).substring(0, 1);
+                            } else dict[Integer.parseInt(codeTF[i].getText(), 2)] = (letterTF[i].getText());
                             //this if-else made to pass empty symbol to dictionary
-                        }catch (Exception e){
-                            errorLabel.setText("Error! Wrong code at "+(i+1)+" pos");
+                        } catch (Exception e) {
+                            errorLabel.setText("Error! Wrong code at " + (i + 1) + " pos");
                             System.out.println(e);
                             break;
                         }
@@ -213,24 +201,36 @@ public class Backend extends Interface {
             });
             root.getChildren().add(enterButton);
 
-            ScrollPane scrollPane = new ScrollPane(gridPane);
-            scrollPane.setLayoutX(10);
-            scrollPane.setLayoutY(35);
-            scrollPane.setPrefViewportHeight(275);
-            scrollPane.setPrefViewportWidth(350);
-            root.getChildren().add(scrollPane);
-
-            Label emptySymbWarning = new Label("Note: empty symbol must be encoded as \"0\"");
-            emptySymbWarning.setLayoutX(10);
-            emptySymbWarning.setLayoutY(10);
-            emptySymbWarning.setFont(Font.font("System",16));
-            root.getChildren().add(emptySymbWarning);
-
-            Scene newScene = new Scene(root, Color.SNOW);
-            newStage.setScene(newScene);
-            newStage.setResizable(false);
-            newStage.show();
+            Button closeButton = new Button("Close");
+            closeButton.setLayoutX(300);
+            closeButton.setLayoutY(330);
+            closeButton.setPrefSize(75, 15);
+            closeButton.setOnAction(new EventHandler<ActionEvent>() {
+                @Override
+                public void handle(ActionEvent actionEvent) {
+                    newStage.close();
+                }
+            });
+            root.getChildren().add(closeButton);
         }
+
+        ScrollPane scrollPane = new ScrollPane(gridPane);
+        scrollPane.setLayoutX(10);
+        scrollPane.setLayoutY(35);
+        scrollPane.setPrefViewportHeight(275);
+        scrollPane.setPrefViewportWidth(350);
+        root.getChildren().add(scrollPane);
+
+        Label emptySymbWarning = new Label("Note: empty symbol must be encoded as \"0\"");
+        emptySymbWarning.setLayoutX(10);
+        emptySymbWarning.setLayoutY(10);
+        emptySymbWarning.setFont(Font.font("System",16));
+        root.getChildren().add(emptySymbWarning);
+
+        Scene newScene = new Scene(root, Color.SNOW);
+        newStage.setScene(newScene);
+        newStage.setResizable(false);
+        newStage.show();
     }
 
     public static String[] createDict(String string){

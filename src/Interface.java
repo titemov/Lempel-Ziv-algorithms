@@ -193,7 +193,8 @@ public class Interface extends Application {
                     Backend.run(algoCB.getValue(), modeCB.getValue(), inputString, dictSize, buffSize);
                 }catch (Exception e){
                     errorLabel.setText("Error!");
-                    e.printStackTrace();
+                    //e.printStackTrace();
+                    System.out.println(e);
                 }
 
                 if(Objects.equals("binary",numSysCB.getValue())){
