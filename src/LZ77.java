@@ -85,7 +85,7 @@ public class LZ77 {
         String[][] result;
 
         int dictSubBlock = (int)Math.ceil(Math.log(dictSize)/Math.log(2));
-        int buffSubBlock = (int)Math.ceil(Math.log(buffSize)/Math.log(2));
+        int buffSubBlock = (int)Math.ceil(Math.log(dictSize)/Math.log(2));
         int letterSubBlock = (int)Math.ceil(Math.log((Backend.dict).length)/Math.log(2));
         int blockLen = dictSubBlock+buffSubBlock+letterSubBlock;
 
