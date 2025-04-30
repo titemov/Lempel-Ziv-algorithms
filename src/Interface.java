@@ -192,9 +192,10 @@ public class Interface extends Application {
                 try {
                     Backend.run(algoCB.getValue(), modeCB.getValue(), inputString, dictSize, buffSize);
                 }catch (Exception e){
-                    errorLabel.setText("Error!");
-                    e.printStackTrace();
-                    //System.out.println(e);
+                    errorLabel.setText("Error! Probably dictionary not full.");
+                    //e.printStackTrace();
+                    System.out.println(e);
+                    //Probably dictionary not full
                 }
 
                 if(Objects.equals("binary",numSysCB.getValue())){

@@ -207,6 +207,7 @@ public class LZ78 {
         for(int i=0;i<code.length;i++){
             binaryPos=code[index][0];
             binarySymb=code[index][1];
+            //System.out.println("binary "+binaryPos);
 
             this.pos=Integer.parseInt(binaryPos,2);
             try {
@@ -217,6 +218,7 @@ public class LZ78 {
             }
 
             //while decoding buff string used to contain current substring (no need ?)'
+            //System.out.println(this.pos);
             if(this.pos==0){
                 this.buff=this.letter;
             }else{
