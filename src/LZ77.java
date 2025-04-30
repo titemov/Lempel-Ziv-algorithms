@@ -98,7 +98,7 @@ public class LZ77 {
             result[i][0] = temp.substring(0,dictSubBlock);
             result[i][1] = temp.substring(dictSubBlock,dictSubBlock+buffSubBlock);
             result[i][2] = temp.substring(dictSubBlock+buffSubBlock);
-            //System.out.println(Arrays.toString(result[i]));
+            System.out.println(Arrays.toString(result[i]));
         }
 
         return result;
